@@ -1,0 +1,28 @@
+# vsim -c tb_ctrl_core -do "run -all; quit" -gSTRESS=1 
+# Start time: 21:42:58 on Nov 16,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: init_fsm.sv(29): (vopt-13314) Defaulting port 'mr_i' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# ** Warning: ctrl_core.sv(27): (vopt-13314) Defaulting port 'mr_i' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# //  Questa Sim-64
+# //  Version 10.7c win64 Aug 18 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.ddr4_pkg(fast)
+# Loading work.tb_ctrl_core(fast)
+# run -all
+# ctrl_core REFI=300 STRESS=1: cycles=270718 req=20000 ACT=16680 RD=9913 WR=10087 PRE=10462 PREA=1229 REF=892 SRE=6 SRX=6 errors=0  PASS
+# ** Note: $finish    : tb_ctrl_core.sv(375)
+#    Time: 2707185 ns  Iteration: 1  Instance: /tb_ctrl_core
+# End time: 21:42:59 on Nov 16,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 2

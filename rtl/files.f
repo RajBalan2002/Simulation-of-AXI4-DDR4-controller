@@ -1,0 +1,16 @@
+rtl/ddr4_pkg.sv
+rtl/cdc_cells.sv
+rtl/async_fifo.sv
+rtl/ecc.sv
+rtl/addr_map.sv
+rtl/bank_fsm.sv
+rtl/global_timers.sv
+rtl/refresh_mgr.sv
+rtl/init_fsm.sv
+rtl/lowpower_fsm.sv
+rtl/cmd_arbiter.sv
+rtl/ctrl_core.sv
+rtl/sync_fifo.sv
+rtl/ecc_datapath.sv
+rtl/dfi_if.sv
+rtl/ddr4_core.sv
