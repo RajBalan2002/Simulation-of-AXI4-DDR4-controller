@@ -222,3 +222,5 @@ against the Micron 8 Gb DDR4 SDRAM datasheet (MT40A1G8, Rev. N).
 - C. Cummings, "Simulation and Synthesis Techniques for Asynchronous FIFO Design", SNUG 2002
 - M. Y. Hsiao, "A Class of Optimal Minimum Odd-weight-column SEC-DED Codes", IBM J. R&D, 1970
 - Arm, *AMBA AXI and ACE Protocol Specification*; *AMBA APB Protocol Specification*
+
+Author: Raj Balan (M.S in Computer Engineering), George Mason University
