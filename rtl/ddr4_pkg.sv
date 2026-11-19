@@ -3,9 +3,11 @@
 // Shared types, command encodings and timing-parameter structs for the
 // AXI4 DDR4 controller.
 //
-// NOTE: every timing value in timing_default_1600() was derived from memory of
-// the DDR4-1600 speed bin and MUST be checked against JESD79-4 and the Micron
-// datasheet before the design is trusted. They are register-programmable.
+// The command truth table, the initialization order and the DDR4-1600 timing
+// values below were checked against the Micron 8Gb DDR4 SDRAM datasheet
+// (MT40A1G8, Rev. N 06/18): Table 23 (command truth table), Table 51 (tREFI and
+// tRFC), Table 153 (DDR4-1600 speed bin, -125E, CL 11) and Table 161 (AC timing,
+// 1 KB page size for the x8 part). Mode-register opcodes are NOT checked yet.
 // -----------------------------------------------------------------------------
 package ddr4_pkg;
 
@@ -65,8 +67,8 @@ package ddr4_pkg;
     tcnt_t t_xp;       // power-down exit   -> any
   } timing_t;
 
-  // DDR4-1600, tCK = 1.25 ns, CL = 11, CWL = 9.  cycles = ceil(nCK / 4).
-  // VERIFY EVERY VALUE AGAINST THE DATASHEET.
+  // DDR4-1600 (-125E), tCK = 1.25 ns, CL = 11, CWL = 9.  cycles = ceil(nCK / 4).
+  // If CWL = 11 is used instead, t_wr2rd_l becomes 6.
   function automatic timing_t timing_default_1600();
     timing_t t;
     t.t_rcd     = 10'd3;    // 11 nCK
@@ -89,7 +91,8 @@ package ddr4_pkg;
     t.t_zqinit  = 10'd256;  // 1024 nCK
     t.t_zqoper  = 10'd128;  //  512 nCK
     t.t_zqcs    = 10'd32;   //  128 nCK
-    t.t_xs      = 10'd72;   // tRFC + 10 ns = 288 nCK
+    t.t_xs      = 10'd150;  // tXSDLL = tDLLK = 597 nCK (covers tXS = 288 nCK): every
+                            // command, including reads, waits for the DLL to relock
     t.t_xp      = 10'd2;    //   5 nCK
     return t;
   endfunction
@@ -152,8 +155,7 @@ package ddr4_pkg;
     logic [13:0]        a;
   } ca_pins_t;
 
-  // DDR4 command truth table (CS_n, ACT_n, RAS_n, CAS_n, WE_n).
-  // VERIFY against JESD79-4 Table "Command Truth Table".
+  // DDR4 command truth table (CS_n, ACT_n, RAS_n, CAS_n, WE_n), per Table 23.
   function automatic ca_pins_t encode_cmd(input cmd_t c);
     ca_pins_t p;
     // default: deselect

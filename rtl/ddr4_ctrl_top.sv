@@ -157,11 +157,11 @@ module ddr4_ctrl_top
   assign req_r = req_t'(req_r_bits);
 
   async_fifo #(.DATA_W(REQ_W), .ADDR_W(REQ_AW)) u_req_fifo (
-    .wclk(aclk), .wrst_n(arst_n), .winc(req_push), .wdata(req_w), .wfull(req_full), 
+    .wclk(aclk), .wrst_n(arst_n), .winc(req_push), .wdata(req_w), .wfull(req_full), .wfree(),
     .rclk(cclk), .rrst_n(crst_sync_n), .rinc(req_pop), .rdata(req_r_bits), .rempty(req_empty));
 
   async_fifo #(.DATA_W(BURST_DATA_W), .ADDR_W(WD_AW)) u_wd_fifo (
-    .wclk(aclk), .wrst_n(arst_n), .winc(wd_push), .wdata(wd_w), .wfull(wd_full), 
+    .wclk(aclk), .wrst_n(arst_n), .winc(wd_push), .wdata(wd_w), .wfull(wd_full), .wfree(),
     .rclk(cclk), .rrst_n(crst_sync_n), .rinc(wd_pop), .rdata(wd_r), .rempty(wd_empty));
 
   // cclk -> aclk
@@ -170,7 +170,7 @@ module ddr4_ctrl_top
   logic [RD_AW:0]  rd_free;
 
   async_fifo #(.DATA_W(RDW), .ADDR_W(RD_AW)) u_rd_fifo (
-    .wclk(cclk), .wrst_n(crst_sync_n), .winc(rd_push), .wdata(rd_w), .wfull(rd_full), 
+    .wclk(cclk), .wrst_n(crst_sync_n), .winc(rd_push), .wdata(rd_w), .wfull(rd_full), .wfree(rd_free),
     .rclk(aclk), .rrst_n(arst_n), .rinc(rd_pop), .rdata(rd_r), .rempty(rd_empty));
 
   // ECC events: {ue_cnt, ce_cnt}. Only non-zero events are sent. If the FIFO
@@ -181,7 +181,7 @@ module ddr4_ctrl_top
   async_fifo #(.DATA_W(8), .ADDR_W(EVT_AW)) u_evt_fifo (
     .wclk(cclk), .wrst_n(crst_sync_n),
     .winc(ecc_evt_c && ((ecc_ce_c != '0) || (ecc_ue_c != '0)) && !evt_full),
-    .wdata({ecc_ue_c, ecc_ce_c}), .wfull(evt_full), 
+    .wdata({ecc_ue_c, ecc_ce_c}), .wfull(evt_full), .wfree(),
     .rclk(aclk), .rrst_n(arst_n), .rinc(!evt_empty), .rdata(evt_r), .rempty(evt_empty));
 
   // single-bit control, aclk -> cclk

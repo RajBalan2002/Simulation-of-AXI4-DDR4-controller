@@ -27,7 +27,7 @@ module ddr4_core
   input  logic [INIT_CNT_W-1:0]   t_cke_i,
   input  logic [INIT_CNT_W-1:0]   t_xpr_i,
   input  logic [INIT_CNT_W-1:0]   t_dllk_i,
-  input  logic [6:0][13:0]        mr_i,
+  input  var logic [6:0][13:0]    mr_i,
   input  logic [REFI_W-1:0]       t_refi_i,
   input  logic [3:0]              ref_thresh_i,
   input  var tcnt_t               t_ckesr_i,
