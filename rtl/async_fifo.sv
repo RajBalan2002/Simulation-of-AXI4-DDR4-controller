@@ -7,6 +7,8 @@
 //  - Read data is first-word-fall-through: rdata is valid whenever !rempty.
 //  - wfull and rempty are registered in their own domains. Each may be asserted
 //    slightly longer than strictly necessary, never shorter.
+//  - wfree is the number of free slots as seen from the write side. It lags
+//    behind reads, so it can under-report free space but never over-reports.
 // -----------------------------------------------------------------------------
 module async_fifo #(
   parameter int DATA_W = 8,
@@ -18,6 +20,7 @@ module async_fifo #(
   input  logic              winc,
   input  logic [DATA_W-1:0] wdata,
   output logic              wfull,
+  output logic [ADDR_W:0]   wfree,
   // read side
   input  logic              rclk,
   input  logic              rrst_n,
@@ -62,6 +65,13 @@ module async_fifo #(
   always_ff @(posedge wclk) begin
     if (wr_en) mem[wbin[ADDR_W-1:0]] <= wdata;
   end
+
+  // Free-slot count from the write pointer and the synchronized read pointer.
+  logic [ADDR_W:0] rbin_wclk;
+  always_comb begin
+    for (int i = 0; i <= ADDR_W; i++) rbin_wclk[i] = ^(rgray_wclk >> i);
+  end
+  assign wfree = (ADDR_W+1)'(DEPTH) - (wbin - rbin_wclk);
 
   // ------------------------------- read domain ------------------------------
   assign rd_en     = rinc && !rempty;

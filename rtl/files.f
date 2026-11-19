@@ -14,3 +14,6 @@ rtl/sync_fifo.sv
 rtl/ecc_datapath.sv
 rtl/dfi_if.sv
 rtl/ddr4_core.sv
+rtl/axi4_slave_if.sv
+rtl/apb_csr.sv
+rtl/ddr4_ctrl_top.sv

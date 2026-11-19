@@ -88,6 +88,8 @@ module tb_ctrl_core #(
   int               busy_pct = 100;
   int               sr_cnt = 0;
   int               sr_next = 1;
+  int               sr_gap = 0;
+  bit               sr_again = 0;
   int               m_sr_cycles = 0;
   logic [BANK_W-1:0] last_bank = '0;
   logic [ROW_W-1:0]  row_set [4];
@@ -148,13 +150,24 @@ module tb_ctrl_core #(
       // Self-refresh requests at nine points in the run. Odd ones are long
       // (the memory really enters self-refresh); even ones last 1 to 12 cycles
       // so the request is often withdrawn while banks are still being closed.
+      // A long request is followed a few cycles later by a second long one, so
+      // the controller is asked to re-enter self-refresh straight after leaving it.
       if (sr_cnt > 0) begin
         sr_cnt <= sr_cnt - 1;
-        if (sr_cnt == 1) sr_req <= 1'b0;
+        if (sr_cnt == 1) begin
+          sr_req <= 1'b0;
+          if (sr_again) sr_gap <= 5;
+        end
+      end else if (sr_gap > 0) begin
+        sr_gap <= sr_gap - 1;
+        if (sr_gap == 1) begin
+          sr_req <= 1'b1; sr_cnt <= 400; sr_again <= 0;
+        end
       end else if (sr_next <= 9 && popped >= (sr_next * NREQ) / 10) begin
-        sr_next <= sr_next + 1;
-        sr_req  <= 1'b1;
-        sr_cnt  <= (sr_next % 2 == 1) ? 400 : $urandom_range(1, 12);
+        sr_next  <= sr_next + 1;
+        sr_req   <= 1'b1;
+        sr_cnt   <= (sr_next % 2 == 1) ? 400 : $urandom_range(1, 12);
+        sr_again <= (sr_next % 2 == 1);
       end
     end
   end
@@ -299,6 +312,10 @@ module tb_ctrl_core #(
           end else begin
             if (cke) fail("CKE high on self-refresh entry");
             if (!sr_req) fail("self-refresh entry without a request");
+            // datasheet: after leaving self-refresh, at least one REFRESH is
+            // required before self-refresh may be entered again
+            if (m_last_srx != NEVER && m_last_ref < m_last_srx)
+              fail("self-refresh re-entered with no REFRESH since the last exit");
             m_in_sr = 1; m_last_sre = cyc; n_sre++;
           end
         end
