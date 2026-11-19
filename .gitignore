@@ -1,0 +1,26 @@
+# Simulator output (Questa libraries, logs, waves, coverage)
+work/
+**/work/
+sim/
+transcript
+*.wlf
+*.vstf
+*.ucdb
+modelsim.ini
+
+# Verilator builds (scripts/run_sims.sh)
+build/
+obj_dir/
+*.vcd
+*.fst
+
+# Python
+__pycache__/
+*.pyc
+
+# Local-only files
+CLAUDE.md
+rtl_v04_backup/
+rtl/uvm_version_check.sv
+*.zip
+*.pdf
