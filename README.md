@@ -4,10 +4,12 @@ A synthesizable DDR4 SDRAM controller in SystemVerilog with an AXI4 slave data
 interface, an APB register interface, SECDED error correction and a DFI-style
 PHY interface.
 
-**Status: RTL complete, simulation-verified against behavioral models.**
-It has not been run against a vendor memory model, synthesized, or taken through
-CDC or formal analysis. See [Verification status](docs/verification_status.md)
-for exactly what has and has not been checked.
+**Status: RTL complete and verified in simulation with a UVM environment:
+316/316 regression runs pass at four clock ratios, with 97.0 % functional and
+89.7 % code coverage and 92 assertions.** It has not been run against a vendor
+memory model, synthesized, or taken through CDC or formal analysis. See
+[docs/verification.md](docs/verification.md) for exactly what has and has not
+been checked, and [docs/bug_log.md](docs/bug_log.md) for the bugs found on the way.
 
 ## Features
 
@@ -72,17 +74,33 @@ stateDiagram-v2
     REFRESHING --> IDLE: tRFC expires
 ```
 
-More detail: [Architecture](docs/architecture.md) ·
-[Specification](docs/specification.md) · [Register map](docs/register_map.md)
+### Register map (APB)
+
+| Offset | Register | Contents |
+| --- | --- | --- |
+| `0x000` | CTRL | [0] self-refresh request, [1] init start |
+| `0x004` | STATUS | [0] init done, [1] in self-refresh, [2] refresh overflow (read-only) |
+| `0x008` | INT_EN | [0] corrected error, [1] uncorrectable error, [2] refresh overflow |
+| `0x00C` | INT_STAT | Same bits; write 1 to clear |
+| `0x010` | ECC_CE | Corrected-word count, saturating; any write clears |
+| `0x014` | ECC_UE | Uncorrectable-word count, saturating; any write clears |
+| `0x018` | LATENCY | [2:0] DFI write latency, [6:4] read-enable latency |
+| `0x01C` | REFRESH | [15:0] tREFI interval, [19:16] urgent threshold |
+| `0x020`–`0x030` | T_RST, T_CKE, T_XPR, T_DLLK, T_CKESR | Initialization and self-refresh waits |
+| `0x040 + 4n` | MR0–MR6 | Mode-register opcodes |
+| `0x080 + 4k` | TIMING0–21 | One JEDEC timing parameter each (k = 0 is tRCD) |
+
+Configuration is quasi-static: program it before setting `CTRL.init_start`.
 
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
-| `rtl/` | Synthesizable RTL (20 files) and `files.f` compile order |
-| `tb/` | Self-checking testbenches and the behavioral PHY/memory model |
-| `scripts/` | Regression script and the ECC matrix generator |
-| `docs/` | Specification, architecture, register map, verification status, bug log |
+| `rtl/` | Synthesizable RTL (19 files) and `files.f` compile order |
+| `tb/` | Directed self-checking testbenches and the behavioral PHY/memory model |
+| `dv/` | UVM environment: agents, register model, scoreboard, protocol checker, coverage, SVA, 21 tests ([dv/README.md](dv/README.md)) |
+| `scripts/` | Verilator regression script and the ECC matrix generator |
+| `docs/` | [Verification plan and results](docs/verification.md), [bug log](docs/bug_log.md) |
 
 ### RTL files
 
@@ -110,6 +128,20 @@ More detail: [Architecture](docs/architecture.md) ·
 
 ## Running the tests
 
+### UVM regression (Questa)
+
+From the repository root:
+
+```sh
+python dv/scripts/run_test.py sanity_test                # compile and run one test
+python dv/scripts/run_test.py axi_rand_test 7 fast       # seed 7, AXI clock 400 MHz
+python dv/scripts/regress.py --clk all --cov             # 316 runs, merged coverage
+```
+
+See [dv/README.md](dv/README.md) for all options.
+
+### Directed testbenches
+
 With Verilator 5.x:
 
 ```sh
@@ -134,6 +166,23 @@ Each test prints one summary line ending in `PASS` or `FAIL`.
 
 ## Verification summary
 
+### UVM environment
+
+| Result | |
+| --- | --- |
+| Regression | 316 / 316 runs pass: 21 tests × seeds × 4 AXI/controller clock ratios |
+| Functional coverage | 97.0 % merged (AXI, DFI command sequences, binding timing rule, refresh debt, self-refresh, ECC per bit and word, registers, configuration) |
+| Code coverage | 89.7 % merged (statement, branch, condition, expression, FSM, toggle) |
+| Assertions | 92 bound SVA properties, all passing, each with a cover |
+
+Data is checked by a scoreboard against a reference memory, ordered by a probe
+on the request-FIFO push. DDR4 protocol is checked by an independent model that
+judges every command against the programmed timing, citing the datasheet table
+for each rule. The DFI agent plays the PHY and DRAM and injects single- and
+double-bit errors. Details and open coverage items: [docs/verification.md](docs/verification.md).
+
+### Directed testbenches
+
 | Testbench | What it checks |
 | --- | --- |
 | `tb_async_fifo` | 20,000 random words at three clock ratios; ordering, full, empty, free count |
@@ -157,7 +206,8 @@ against the Micron 8 Gb DDR4 SDRAM datasheet (MT40A1G8, Rev. N).
 
 ## Roadmap
 
-- [ ] UVM environment with functional coverage
+- [x] UVM environment with functional coverage
+- [ ] Coverage closure (open items in [docs/verification.md](docs/verification.md#open-items))
 - [ ] Formal proofs: FIFO pointers, bank timers, refresh starvation
 - [ ] CDC analysis
 - [ ] Synthesis and timing at 200 MHz
