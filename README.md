@@ -1,4 +1,4 @@
-# AXI4 DDR4 Memory Controller
+# AXI4 DDR4 Memory Controller Design and UVM Verification
 
 A synthesizable DDR4 SDRAM controller in SystemVerilog with an AXI4 slave data
 interface, an APB register interface, SECDED error correction and a DFI-style
