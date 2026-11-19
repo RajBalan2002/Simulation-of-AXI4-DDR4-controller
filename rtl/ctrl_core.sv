@@ -6,8 +6,7 @@
 // cmd_o, cke_o and the *_issued_o strobes are combinational outputs of this
 // cycle's decision; dfi_if registers them.
 //
-// Not yet implemented: precharge power-down, periodic ZQCS, and the extra
-// refresh JEDEC asks for after self-refresh exit (to be confirmed).
+// Not yet implemented: precharge power-down and periodic ZQCS.
 // -----------------------------------------------------------------------------
 module ctrl_core
   import ddr4_pkg::*;
@@ -24,7 +23,7 @@ module ctrl_core
   input  logic [INIT_CNT_W-1:0]   t_cke_i,
   input  logic [INIT_CNT_W-1:0]   t_xpr_i,
   input  logic [INIT_CNT_W-1:0]   t_dllk_i,
-  input  logic [6:0][13:0]        mr_i,
+  input  var logic [6:0][13:0]    mr_i,
   input  logic [REFI_W-1:0]       t_refi_i,
   input  logic [3:0]              ref_thresh_i,
   input  var tcnt_t               t_ckesr_i,
@@ -152,7 +151,7 @@ module ctrl_core
   );
 
   // --------------------------------- low power ------------------------------
-  logic lp_drain, lp_in_sr, lp_srx_ok;
+  logic lp_drain, lp_in_sr, lp_srx_ok, lp_need_ref;
 
   lowpower_fsm u_lp (
     .clk          (clk),
@@ -162,9 +161,11 @@ module ctrl_core
     .t_ckesr_i    (t_ckesr_i),
     .sre_issued_i (is_sre),
     .srx_issued_i (is_srx),
+    .ref_issued_i (is_ref),
     .drain_o      (lp_drain),
     .in_sr_o      (lp_in_sr),
-    .srx_ok_o     (lp_srx_ok)
+    .srx_ok_o     (lp_srx_ok),
+    .need_ref_o   (lp_need_ref)
   );
 
   // ---------------------------------- refresh -------------------------------
@@ -194,6 +195,7 @@ module ctrl_core
     .lp_drain_i       (lp_drain),
     .lp_in_sr_i       (lp_in_sr),
     .lp_srx_ok_i      (lp_srx_ok),
+    .lp_need_ref_i    (lp_need_ref),
     .ref_any_i        (ref_any),
     .ref_urgent_i     (ref_urgent),
     .hd_valid_i       (req_valid_i),

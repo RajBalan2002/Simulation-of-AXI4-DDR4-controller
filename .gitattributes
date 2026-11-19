@@ -1,0 +1,6 @@
+# Store text with LF line endings whatever the committer's platform.
+* text=auto eol=lf
+
+*.sh  text eol=lf
+*.pdf binary
+*.zip binary

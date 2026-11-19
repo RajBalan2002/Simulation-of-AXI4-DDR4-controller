@@ -1,0 +1,22 @@
+# test                 seeds   extra plusargs
+sanity_test            1
+reg_reset_test         1
+reg_bitbash_test       1
+init_test              3
+axi_rand_test          5
+axi_strobe_test        3
+axi_unsupported_test   3
+axi_backpressure_test  3
+concurrent_rw_test     3
+page_policy_test       3
+timing_stress_test     3
+timing_sweep_test      10
+refresh_test           5
+self_refresh_test      5
+ecc_single_test        2
+ecc_double_test        3
+ecc_counter_sat_test   2
+interrupt_test         2
+latency_test           8
+reset_test             3
+random_all_test        10

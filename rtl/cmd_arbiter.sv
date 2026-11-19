@@ -7,6 +7,7 @@
 //   2. self-refresh: exit command, or hold
 //   3. drain (self-refresh entry, urgent refresh, or idle refresh):
 //        PREA while any row is open, then SRE or REF once every bank is idle
+//        (REF first if one is owed after a self-refresh exit)
 //   4. head-of-queue request: RD/WR on a row hit, PRE on a row miss,
 //      ACT on a closed bank
 //   5. deselect
@@ -26,6 +27,7 @@ module cmd_arbiter
   input  logic        lp_drain_i,
   input  logic        lp_in_sr_i,
   input  logic        lp_srx_ok_i,
+  input  logic        lp_need_ref_i,    // REFRESH owed before the next self-refresh entry
 
   // refresh
   input  logic        ref_any_i,
@@ -73,7 +75,7 @@ module cmd_arbiter
         if (any_row_valid_i) begin
           if (all_can_pre_i) cmd_o.cmd = CMD_PREA;
         end else if (all_idle_i) begin
-          cmd_o.cmd = lp_drain_i ? CMD_SRE : CMD_REF;
+          cmd_o.cmd = (lp_drain_i && !lp_need_ref_i) ? CMD_SRE : CMD_REF;
         end
       end
 

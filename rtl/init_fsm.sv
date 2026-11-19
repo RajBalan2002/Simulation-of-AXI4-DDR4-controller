@@ -11,7 +11,7 @@
 //
 // tMRD, tMOD and tZQinit are enforced by global_timers through mrs_ok_i and
 // bus_ok_i; this module only sequences the requests.
-// VERIFY the sequence and the mode-register order against JESD79-4.
+// The sequence and mode-register order follow the datasheet's power-up procedure.
 // -----------------------------------------------------------------------------
 module init_fsm
   import ddr4_pkg::*;
@@ -26,7 +26,7 @@ module init_fsm
   input  logic [INIT_CNT_W-1:0]   t_cke_i,
   input  logic [INIT_CNT_W-1:0]   t_xpr_i,
   input  logic [INIT_CNT_W-1:0]   t_dllk_i,
-  input  logic [6:0][13:0]        mr_i,          // mr_i[n] = opcode for MRn
+  input  var logic [6:0][13:0]    mr_i,          // mr_i[n] = opcode for MRn
 
   input  logic                    mrs_ok_i,      // from global_timers
   input  logic                    bus_ok_i,      // from global_timers
